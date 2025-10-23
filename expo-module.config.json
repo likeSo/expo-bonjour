@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["ExpoBonjourModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.bonjour.ExpoBonjourModule"]
+  }
+}
