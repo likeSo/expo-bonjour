@@ -27,6 +27,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "../app.plugin.js",
+        {
+          "localNetworkUsageDescription": "${PRODUCT_NAME} needs your permission to find local devices",
+          "bonjourServices": ["_http._tcp"]
+        }
+      ]
+    ]
   }
 }

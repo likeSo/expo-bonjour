@@ -1,51 +1,80 @@
-import { useEvent } from 'expo';
-import ExpoBonjour, { ExpoBonjourView } from 'expo-bonjour';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { useEvent } from "expo";
+import ExpoBonjour, { ServiceDevice } from "expo-bonjour";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Alert,
+  Button,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function App() {
-  const onChangePayload = useEvent(ExpoBonjour, 'onChange');
-
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{ExpoBonjour.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{ExpoBonjour.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await ExpoBonjour.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
-        <Group name="Views">
-          <ExpoBonjourView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
-          />
-        </Group>
-      </ScrollView>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
   );
 }
 
-function Group(props: { name: string; children: React.ReactNode }) {
+const AppContent = () => {
+  const insets = useSafeAreaInsets();
+  const newDevice = useEvent(ExpoBonjour, "onDeviceFound");
+
+  useEffect(() => {
+    if (newDevice) {
+      console.log(newDevice);
+      setFoundDevices((prev) => [...prev, newDevice]);
+    }
+  }, [newDevice]);
+
+  useEffect(() => {
+    ExpoBonjour.startScan("_http", "_tcp");
+  }, []);
+
+  const [foundDevices, setFoundDevices] = useState<ServiceDevice[]>([]);
+
+  const renderItem = useCallback(({ item }: { item: ServiceDevice }) => {
+    return (
+      <TouchableOpacity
+        onPress={async () => {
+          try {
+            const fullInfo = await ExpoBonjour.getIPAddress(item);
+            Alert.alert(JSON.stringify(fullInfo));
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      >
+        <Text>Name: {item.name}</Text>
+        <Text>Fullname: {item.fullName}</Text>
+        <Text>Address: {item.address}</Text>
+      </TouchableOpacity>
+    );
+  }, []);
+
   return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
-    </View>
+    <FlatList
+      style={styles.container}
+      contentContainerStyle={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        paddingBottom: insets.bottom,
+      }}
+      data={foundDevices}
+      renderItem={renderItem}
+      keyExtractor={(item, index) => index.toString()}
+    />
   );
-}
+};
 
 const styles = {
   header: {
@@ -58,13 +87,13 @@ const styles = {
   },
   group: {
     margin: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
   },
   container: {
     flex: 1,
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
   },
   view: {
     flex: 1,

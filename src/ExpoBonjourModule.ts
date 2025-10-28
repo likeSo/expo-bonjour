@@ -1,12 +1,25 @@
-import { NativeModule, requireNativeModule } from 'expo';
+import { NativeModule, requireNativeModule } from "expo";
 
-import { ExpoBonjourModuleEvents } from './ExpoBonjour.types';
+import {
+  AnyServiceType,
+  ExpoBonjourModuleEvents,
+  KnownServiceTypes,
+  ServiceDevice,
+  ServiceDeviceWithHost,
+  ServiceProtocol,
+} from "./ExpoBonjour.types";
 
 declare class ExpoBonjourModule extends NativeModule<ExpoBonjourModuleEvents> {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+  startScan(
+    service: KnownServiceTypes | AnyServiceType,
+    protocol: ServiceProtocol,
+    domain?: string | null
+  ): Promise<void>;
+  stopScan(): Promise<void>;
+
+  getAllDevices(): Promise<ServiceDevice[]>;
+
+  getIPAddress(device: ServiceDevice): Promise<ServiceDeviceWithHost>
 }
 
-// This call loads the native module object from the JSI.
-export default requireNativeModule<ExpoBonjourModule>('ExpoBonjour');
+export default requireNativeModule<ExpoBonjourModule>("ExpoBonjour");
