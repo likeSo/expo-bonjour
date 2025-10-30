@@ -54,9 +54,12 @@ export type ServiceDeviceWithHost = ServiceDevice & {
 
 export type ExpoBonjourModuleEvents = {
   onStartScan: () => void;
+  onScanError: (payload: { errorCode: number }) => void;
   onStopScan: () => void;
 
   onDeviceFound: (payload: ServiceDevice) => void;
+  onDeviceChange: (payload: ServiceDevice) => void;
+  onDeviceRemoved: (payload: ServiceDevice) => void;
 };
 
 export type PublishingOptions = {

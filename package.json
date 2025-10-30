@@ -1,6 +1,6 @@
 {
   "name": "expo-bonjour",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-config mDNS (Bonjour) service discovery for Expo and React Native apps.",
   "main": "build/index.js",
   "types": "build/index.d.ts",

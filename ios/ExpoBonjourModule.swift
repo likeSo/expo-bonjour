@@ -12,7 +12,7 @@ public class ExpoBonjourModule: Module {
   public func definition() -> ModuleDefinition {
       Name("ExpoBonjour")
       
-      Events("onStartScan", "onStopScan", "onDeviceFound", "onDeviceChange", "onDeviceRemoved", "onPublishingError")
+      Events("onStartScan", "onScanError", "onStopScan", "onDeviceFound", "onDeviceChange", "onDeviceRemoved", "onPublishError")
       
       AsyncFunction("startScan") { (serviceType: String, `protocol`: String, domain: String?) in
           if isScanning {
@@ -41,7 +41,7 @@ public class ExpoBonjourModule: Module {
                   @unknown default: payload = [:]
                       
                   }
-                  self?.sendEvent("onError", payload)
+                  self?.sendEvent("onScanError", payload)
               case .cancelled:
                   self?.isScanning = false
                   self?.browser = nil
@@ -126,7 +126,7 @@ public class ExpoBonjourModule: Module {
           do {
               let parameters = NWParameters.tcp
               parameters.allowLocalEndpointReuse = true
-            listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: options.port)!)
+              listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: options.port)!)
               var txtRecord: Data?
               if options.txtRecord != nil, !options.txtRecord!.isEmpty {
                   let dataPairs = options.txtRecord!.compactMapValues{$0.data(using: .utf8)}
@@ -148,26 +148,26 @@ public class ExpoBonjourModule: Module {
                       @unknown default: payload = [:]
                           
                       }
-                      self?.sendEvent("onPublishingError", payload)
+                      self?.sendEvent("onPublishError", payload)
                       self?.listener?.cancel()
                   default: break
                   }
               }
               
-              listener?.newConnectionHandler = { [weak self] connection in
-                  switch connection.endpoint {
-                  case let .hostPort(host, port):
-                      switch host {
-                      case .ipv4(let address):
-                          self?.sendEvent("onNewConnectionInComing", ["host": address.rawValue.toIPv4String(), "port": "\(port.rawValue)"])
-                      case .ipv6(let address):
-                          self?.sendEvent("onNewConnectionInComing", ["host": address.rawValue.toIPv6String(), "port": "\(port.rawValue)"])
-                      default:
-                          break
-                      }
-                  default: break
-                  }
-              }
+//              listener?.newConnectionHandler = { [weak self] connection in
+//                  switch connection.endpoint {
+//                  case let .hostPort(host, port):
+//                      switch host {
+//                      case .ipv4(let address):
+//                          self?.sendEvent("onNewConnectionInComing", ["host": address.rawValue.toIPv4String(), "port": "\(port.rawValue)"])
+//                      case .ipv6(let address):
+//                          self?.sendEvent("onNewConnectionInComing", ["host": address.rawValue.toIPv6String(), "port": "\(port.rawValue)"])
+//                      default:
+//                          break
+//                      }
+//                  default: break
+//                  }
+//              }
               
               listener?.start(queue: .global())
           } catch {
@@ -175,7 +175,7 @@ public class ExpoBonjourModule: Module {
           }
       }
       
-      AsyncFunction("stopPublishing") {
+      AsyncFunction("stopPublish") {
           listener?.cancel()
           listener = nil
       }
